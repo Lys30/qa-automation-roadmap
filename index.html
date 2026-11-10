@@ -1,0 +1,1144 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<style>:root{color-scheme:light}body{margin:0}[hidden]{display:none!important}</style>
+<title>QA Automation Roadmap</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<style>
+/* Layout: sticky left rail listing the six phases like a test-run report (TODO / RUN / PASS),
+   one reading column beside it. Views switch by URL hash. Code blocks stay dark in both themes. */
+:root{
+  --bg:#F2F5F3; --surface:#FFFFFF; --surface-2:#E8EEEB; --fg:#13211C; --muted:#52645D; --line:#D3DDD8;
+  --accent:#0B6B5F; --accent-fg:#FFFFFF; --accent-soft:#D6EEE8;
+  --warn:#8A5200; --warn-soft:#FBEBCF; --bad:#B3261E; --bad-soft:#FBE0DD; --good:#1B6B3A; --good-soft:#D9F0E0;
+  --code-bg:#0F1B17; --code-fg:#D7E8E1; --code-line:#2A3E35; --code-muted:#8CA69C;
+  --font-display:'Bricolage Grotesque','Segoe UI',system-ui,sans-serif;
+  --font-body:'IBM Plex Sans',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --font-mono:'JetBrains Mono',ui-monospace,'SF Mono',Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0C1411; --surface:#131E19; --surface-2:#1A2923; --fg:#E3EEE9; --muted:#97ABA3; --line:#26372F;
+    --accent:#4FD1BC; --accent-fg:#06211C; --accent-soft:#123A33;
+    --warn:#F2B45A; --warn-soft:#3A2A10; --bad:#FF8A80; --bad-soft:#3B1816; --good:#6FD79A; --good-soft:#12301E;
+    --code-bg:#08110E; --code-fg:#D7E8E1; --code-line:#22342C; --code-muted:#7F998F;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0C1411; --surface:#131E19; --surface-2:#1A2923; --fg:#E3EEE9; --muted:#97ABA3; --line:#26372F;
+  --accent:#4FD1BC; --accent-fg:#06211C; --accent-soft:#123A33;
+  --warn:#F2B45A; --warn-soft:#3A2A10; --bad:#FF8A80; --bad-soft:#3B1816; --good:#6FD79A; --good-soft:#12301E;
+  --code-bg:#08110E; --code-fg:#D7E8E1; --code-line:#22342C; --code-muted:#7F998F;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{
+  background:var(--bg); color:var(--fg); font-family:var(--font-body); font-size:16px; line-height:1.6;
+  padding-block:24px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));
+  padding-right:max(16px,env(safe-area-inset-right,0px));
+}
+a{color:var(--accent)}
+:focus-visible{outline:2px solid var(--accent); outline-offset:2px; border-radius:4px}
+button{font:inherit; color:inherit}
+h1,h2,h3{font-family:var(--font-display); line-height:1.15; text-wrap:balance; margin:0}
+p{margin:0}
+.mono{font-family:var(--font-mono)}
+.label{font-family:var(--font-mono); font-size:12px; letter-spacing:.08em; text-transform:uppercase; color:var(--muted)}
+
+.shell{max-width:1180px; margin-inline:auto; display:grid; grid-template-columns:260px minmax(0,1fr); gap:40px; align-items:start}
+
+/* rail */
+.rail{position:sticky; top:env(safe-area-inset-top,0px); display:flex; flex-direction:column; gap:20px; max-height:100vh; overflow:auto; padding-bottom:16px}
+.brand{display:flex; flex-direction:column; gap:4px}
+.brand b{font-family:var(--font-display); font-size:22px; line-height:1.1}
+.overall{display:flex; flex-direction:column; gap:8px; padding:14px; background:var(--surface); border:1px solid var(--line); border-radius:10px}
+.overall .row{display:flex; justify-content:space-between; align-items:baseline}
+.overall .pct{font-family:var(--font-mono); font-size:24px; font-weight:600}
+.bar{height:8px; background:var(--surface-2); border-radius:99px; overflow:hidden}
+.bar>i{display:block; height:100%; background:var(--accent); border-radius:99px; transition:width .25s ease}
+.nav{display:flex; flex-direction:column; gap:2px}
+.nav a{display:grid; grid-template-columns:1fr auto; gap:8px; align-items:center; padding:9px 10px; border-radius:8px; text-decoration:none; color:var(--fg); font-size:15px}
+.nav a:hover{background:var(--surface-2)}
+.nav a[aria-current="page"]{background:var(--accent-soft); font-weight:600}
+.nav .sep{height:1px; background:var(--line); margin:8px 0}
+.nav small{display:block; color:var(--muted); font-size:12px; font-weight:400}
+.chip{font-family:var(--font-mono); font-size:11px; font-weight:600; letter-spacing:.06em; padding:2px 7px; border-radius:5px; white-space:nowrap}
+.chip.todo{background:var(--surface-2); color:var(--muted)}
+.chip.run{background:var(--warn-soft); color:var(--warn)}
+.chip.pass{background:var(--good-soft); color:var(--good)}
+
+/* main */
+.main{min-width:0; display:flex; flex-direction:column; gap:36px; padding-bottom:48px}
+.eyebrow{display:flex; gap:10px; align-items:center; flex-wrap:wrap}
+h1{font-size:clamp(30px,5vw,46px); letter-spacing:-.01em}
+h2{font-size:clamp(22px,3vw,28px)}
+h3{font-size:18px}
+.lead{font-size:18px; color:var(--muted); max-width:62ch}
+.hero{display:flex; flex-direction:column; gap:14px}
+.callout{display:flex; flex-direction:column; gap:10px; background:var(--surface); border:1px solid var(--line); border-radius:10px; padding:20px}
+.callout p{max-width:68ch}
+.callout ul{margin:0; padding-left:20px; display:flex; flex-direction:column; gap:4px; max-width:68ch}
+.section{display:flex; flex-direction:column; gap:16px}
+.section>header{display:flex; flex-direction:column; gap:4px}
+.cards{display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:14px}
+.card{display:flex; flex-direction:column; gap:10px; background:var(--surface); border:1px solid var(--line); border-radius:10px; padding:16px; text-decoration:none; color:var(--fg); min-width:0}
+a.card:hover{border-color:var(--accent)}
+.card .top{display:flex; justify-content:space-between; align-items:center; gap:8px}
+.card p{color:var(--muted); font-size:15px}
+.legend{display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:14px}
+.legend div{display:flex; flex-direction:column; gap:2px; padding-left:12px; border-left:2px solid var(--line)}
+.legend b{font-weight:600}
+.legend span{color:var(--muted); font-size:15px}
+
+/* checklists */
+.list{list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:8px}
+.item{display:grid; grid-template-columns:auto minmax(0,1fr); gap:12px; align-items:start; background:var(--surface); border:1px solid var(--line); border-radius:10px; padding:12px 14px; cursor:pointer}
+.item:hover{border-color:var(--accent)}
+.item input{width:20px; height:20px; margin:2px 0 0; accent-color:var(--accent); cursor:pointer}
+.item b{display:block; font-weight:600}
+.item span{color:var(--muted); font-size:15px}
+.item.done b{text-decoration:line-through; text-decoration-color:var(--muted)}
+.item.done{background:var(--surface-2)}
+
+/* tutorial */
+.steps{display:flex; flex-direction:column; gap:22px}
+.step{display:grid; grid-template-columns:34px minmax(0,1fr); gap:14px}
+.step .n{font-family:var(--font-mono); font-weight:600; width:34px; height:34px; display:grid; place-items:center; border-radius:50%; background:var(--accent); color:var(--accent-fg)}
+.step .body{display:flex; flex-direction:column; gap:10px; min-width:0}
+.step .body p{max-width:68ch}
+.code{position:relative; background:var(--code-bg); border:1px solid var(--code-line); border-radius:10px}
+.code .bar-top{display:flex; justify-content:space-between; align-items:center; padding:6px 8px 6px 14px; border-bottom:1px solid var(--code-line)}
+.code .lang{font-family:var(--font-mono); font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:var(--code-muted)}
+.code pre{margin:0; padding:14px; overflow-x:auto; font-family:var(--font-mono); font-size:13.5px; line-height:1.6; color:var(--code-fg); tab-size:2}
+.code pre code{font-family:inherit}
+.copy{background:transparent; border:1px solid var(--code-line); color:var(--code-fg); border-radius:6px; padding:3px 10px; font-family:var(--font-mono); font-size:12px; cursor:pointer}
+.copy:hover{border-color:var(--accent); color:var(--accent)}
+
+/* takeaways */
+.take{display:grid; grid-template-columns:repeat(auto-fit,minmax(250px,1fr)); gap:12px}
+.take div{background:var(--accent-soft); border-radius:10px; padding:14px 16px; font-size:15.5px}
+
+/* quiz */
+.quiz{display:flex; flex-direction:column; gap:18px}
+.q{display:flex; flex-direction:column; gap:10px; background:var(--surface); border:1px solid var(--line); border-radius:10px; padding:16px}
+.q>b{font-weight:600}
+.opt{display:grid; grid-template-columns:auto minmax(0,1fr); gap:10px; align-items:start; padding:9px 12px; border:1px solid var(--line); border-radius:8px; cursor:pointer}
+.opt:hover{border-color:var(--accent)}
+.opt input{margin:3px 0 0; accent-color:var(--accent)}
+.opt.right{background:var(--good-soft); border-color:var(--good)}
+.opt.wrong{background:var(--bad-soft); border-color:var(--bad)}
+.why{font-size:15px; color:var(--muted)}
+.result{display:flex; flex-wrap:wrap; gap:12px; align-items:center}
+.btn{background:var(--accent); color:var(--accent-fg); border:0; border-radius:8px; padding:10px 18px; font-weight:600; cursor:pointer}
+.btn:disabled{opacity:.45; cursor:not-allowed}
+.btn.ghost{background:transparent; color:var(--fg); border:1px solid var(--line)}
+.btn.ghost:hover{border-color:var(--accent)}
+.score{font-family:var(--font-mono); font-weight:600}
+
+/* badges */
+.badge-block{display:grid; grid-template-columns:auto minmax(0,1fr); gap:18px; align-items:center; background:var(--surface); border:1px solid var(--line); border-radius:10px; padding:18px}
+.badge-block svg,.bcard svg{width:76px; height:auto; display:block}
+.reqs{display:flex; flex-wrap:wrap; gap:8px; margin-top:6px}
+.req{font-family:var(--font-mono); font-size:12px; padding:3px 8px; border-radius:5px; background:var(--surface-2); color:var(--muted)}
+.req.ok{background:var(--good-soft); color:var(--good)}
+.bgrid{display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:14px}
+.bcard{display:flex; flex-direction:column; gap:12px; background:var(--surface); border:1px solid var(--line); border-radius:10px; padding:16px; min-width:0}
+.bcard .head{display:grid; grid-template-columns:auto minmax(0,1fr); gap:14px; align-items:center}
+.bcard.locked{border-style:dashed}
+.field{display:flex; flex-direction:column; gap:4px}
+.field input[type=url],.field input[type=text]{width:100%; font:inherit; font-size:14px; padding:8px 10px; border:1px solid var(--line); border-radius:8px; background:var(--bg); color:var(--fg)}
+
+/* weekly plan */
+.wk-group{display:flex; flex-direction:column; gap:8px}
+.wk-group>h3{display:flex; justify-content:space-between; gap:10px; align-items:baseline; flex-wrap:wrap}
+.wk{display:grid; grid-template-columns:auto 64px minmax(0,1fr) minmax(0,1fr); gap:12px; align-items:start; background:var(--surface); border:1px solid var(--line); border-radius:10px; padding:10px 14px; cursor:pointer}
+.wk:hover{border-color:var(--accent)}
+.wk input{width:20px; height:20px; margin:2px 0 0; accent-color:var(--accent)}
+.wk .w{font-family:var(--font-mono); font-weight:600}
+.wk small{display:block; font-family:var(--font-mono); font-size:11px; letter-spacing:.06em; text-transform:uppercase; color:var(--muted)}
+.wk.done{background:var(--surface-2)}
+
+.pager{display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap; border-top:1px solid var(--line); padding-top:20px}
+.pager a{text-decoration:none; font-weight:600}
+.logbox{max-width:100%}
+
+@media (max-width:900px){
+  .shell{grid-template-columns:minmax(0,1fr); gap:22px}
+  .rail{position:static; max-height:none; overflow:visible}
+  .nav{flex-direction:row; overflow-x:auto; gap:6px; padding-bottom:6px}
+  .nav a{display:flex; flex-direction:column; align-items:flex-start; gap:4px; min-width:max-content; border:1px solid var(--line); background:var(--surface)}
+  .nav small{display:none}
+  .nav .sep{display:none}
+}
+@media (max-width:640px){
+  .wk{grid-template-columns:auto minmax(0,1fr); }
+  .wk .w{grid-column:2}
+  .wk>div{grid-column:2}
+  .badge-block{grid-template-columns:minmax(0,1fr)}
+}
+@media (prefers-reduced-motion: reduce){ .bar>i{transition:none} }
+</style>
+<div class="shell">
+  <aside class="rail">
+    <div class="brand">
+      <span class="label">Learning log</span>
+      <b>Manual to Automation</b>
+    </div>
+    <div class="overall" id="overall"></div>
+    <nav class="nav" id="nav" aria-label="Roadmap sections"></nav>
+  </aside>
+  <main class="main" id="view"></main>
+</div>
+
+<script type="text/plain" id="c-p1-init">
+mkdir qa-basics
+cd qa-basics
+npm init -y
+npm install --save-dev typescript tsx
+node -v
+</script>
+<script type="text/plain" id="c-p1-script">
+type LoginCase = {
+  name: string;
+  user: string;
+  pass: string;
+  expected: 'success' | 'error';
+};
+
+const cases: LoginCase[] = [
+  { name: 'valid credentials', user: 'standard_user', pass: 'secret_sauce', expected: 'success' },
+  { name: 'wrong password',    user: 'standard_user', pass: 'nope',         expected: 'error' },
+  { name: 'empty username',    user: '',              pass: 'secret_sauce', expected: 'error' },
+];
+
+function fakeLogin(user: string, pass: string): 'success' | 'error' {
+  return user === 'standard_user' && pass === 'secret_sauce' ? 'success' : 'error';
+}
+
+for (const c of cases) {
+  const actual = fakeLogin(c.user, c.pass);
+  console.log(`${actual === c.expected ? 'PASS' : 'FAIL'}  ${c.name}`);
+}
+</script>
+<script type="text/plain" id="c-p1-run">
+npx tsx login-checks.ts
+</script>
+<script type="text/plain" id="c-p1-async">
+const sleep = (ms: number) => new Promise<void>(resolve => setTimeout(resolve, ms));
+
+async function main() {
+  console.log('Opening page...');
+  await sleep(1000);            // pretend the page takes 1 second to load
+  console.log('Page ready, now click');
+}
+
+main();
+</script>
+<script type="text/plain" id="c-p1-git">
+git init
+git add .
+git commit -m "Add login case checker"
+git branch -M main
+git remote add origin https://github.com/<your-username>/qa-basics.git
+git push -u origin main
+</script>
+
+<script type="text/plain" id="c-p2-html">
+<input class="input_error form_input" placeholder="Username" type="text"
+       data-test="username" id="user-name" name="user-name" value="">
+</script>
+<script type="text/plain" id="c-p2-sel">
+CSS by id            #user-name
+CSS by attribute     [data-test="username"]
+CSS by placeholder   input[placeholder="Username"]
+XPath by id          //input[@id='user-name']
+XPath by value       //input[@value='Login']
+</script>
+<script type="text/plain" id="c-p2-console">
+document.querySelectorAll('#user-name').length     // expect 1
+document.querySelector('[data-test="username"]')   // hover the result to see it highlighted
+$x("//input[@id='user-name']").length              // XPath helper in the Chrome console
+</script>
+
+<script type="text/plain" id="c-p3-init">
+mkdir saucedemo-tests && cd saucedemo-tests
+npm init playwright@latest
+</script>
+<script type="text/plain" id="c-p3-test">
+import { test, expect } from '@playwright/test';
+
+test.describe('SauceDemo login', () => {
+  test('valid user lands on the inventory page', async ({ page }) => {
+    await page.goto('https://www.saucedemo.com');
+    await page.getByPlaceholder('Username').fill('standard_user');
+    await page.getByPlaceholder('Password').fill('secret_sauce');
+    await page.getByRole('button', { name: 'Login' }).click();
+
+    await expect(page).toHaveURL(/inventory/);
+    await expect(page.getByText('Products')).toBeVisible();
+  });
+
+  test('locked out user sees an error', async ({ page }) => {
+    await page.goto('https://www.saucedemo.com');
+    await page.getByPlaceholder('Username').fill('locked_out_user');
+    await page.getByPlaceholder('Password').fill('secret_sauce');
+    await page.getByRole('button', { name: 'Login' }).click();
+
+    await expect(page.locator('[data-test="error"]')).toContainText('locked out');
+  });
+});
+</script>
+<script type="text/plain" id="c-p3-run">
+npx playwright test              # headless, every browser in the config
+npx playwright test --ui         # UI mode: watch mode with a time-travel view
+npx playwright test --headed     # watch the real browser
+npx playwright show-report       # open the HTML report
+</script>
+<script type="text/plain" id="c-p3-codegen">
+npx playwright codegen https://www.saucedemo.com
+</script>
+<script type="text/plain" id="c-p3-cart">
+import { test, expect } from '@playwright/test';
+
+test.beforeEach(async ({ page }) => {
+  await page.goto('https://www.saucedemo.com');
+  await page.getByPlaceholder('Username').fill('standard_user');
+  await page.getByPlaceholder('Password').fill('secret_sauce');
+  await page.getByRole('button', { name: 'Login' }).click();
+});
+
+test('adding an item updates the cart badge', async ({ page }) => {
+  await page.getByRole('button', { name: 'Add to cart' }).first().click();
+  await expect(page.locator('.shopping_cart_badge')).toHaveText('1');
+});
+</script>
+<script type="text/plain" id="c-p3-config">
+// playwright.config.ts (excerpt)
+retries: process.env.CI ? 2 : 0,
+use: {
+  baseURL: 'https://www.saucedemo.com',
+  trace: 'on-first-retry',
+  screenshot: 'only-on-failure',
+},
+
+// after a failure with a trace:
+// npx playwright show-trace path/to/trace.zip
+</script>
+
+<script type="text/plain" id="c-p4-api">
+import { test, expect } from '@playwright/test';
+
+const base = 'https://jsonplaceholder.typicode.com';
+
+test('GET a post', async ({ request }) => {
+  const res = await request.get(`${base}/posts/1`);
+  expect(res.status()).toBe(200);
+
+  const body = await res.json();
+  expect(body).toMatchObject({ id: 1, userId: 1 });
+  expect(typeof body.title).toBe('string');
+});
+
+test('POST creates a post', async ({ request }) => {
+  const res = await request.post(`${base}/posts`, {
+    data: { title: 'qa', body: 'hello', userId: 1 },
+  });
+  expect(res.status()).toBe(201);
+  expect(await res.json()).toMatchObject({ title: 'qa' });
+});
+</script>
+<script type="text/plain" id="c-p4-neg">
+test('unknown post returns 404', async ({ request }) => {
+  const res = await request.get(`${base}/posts/99999`);
+  expect(res.status()).toBe(404);
+});
+
+test('every user has an email', async ({ request }) => {
+  const users = await (await request.get(`${base}/users`)).json();
+  for (const u of users) {
+    expect(u.email).toContain('@');
+  }
+});
+</script>
+<script type="text/plain" id="c-p4-auth">
+import { request } from '@playwright/test';
+
+const api = await request.newContext({
+  baseURL: 'https://api.example.com',
+  extraHTTPHeaders: { Authorization: `Bearer ${process.env.API_TOKEN}` },
+});
+
+const res = await api.get('/orders');
+</script>
+
+<script type="text/plain" id="c-p5-pom">
+// pages/LoginPage.ts
+import { Page, Locator, expect } from '@playwright/test';
+
+export class LoginPage {
+  readonly username: Locator;
+  readonly password: Locator;
+  readonly loginButton: Locator;
+  readonly error: Locator;
+
+  constructor(private readonly page: Page) {
+    this.username = page.getByPlaceholder('Username');
+    this.password = page.getByPlaceholder('Password');
+    this.loginButton = page.getByRole('button', { name: 'Login' });
+    this.error = page.locator('[data-test="error"]');
+  }
+
+  async open() {
+    await this.page.goto('/');
+  }
+
+  async login(user: string, pass: string) {
+    await this.username.fill(user);
+    await this.password.fill(pass);
+    await this.loginButton.click();
+  }
+
+  async expectError(text: string) {
+    await expect(this.error).toContainText(text);
+  }
+}
+</script>
+<script type="text/plain" id="c-p5-fixture">
+// fixtures.ts
+import { test as base } from '@playwright/test';
+import { LoginPage } from './pages/LoginPage';
+
+export const test = base.extend<{ loginPage: LoginPage }>({
+  loginPage: async ({ page }, use) => {
+    const loginPage = new LoginPage(page);
+    await loginPage.open();
+    await use(loginPage);
+  },
+});
+export { expect } from '@playwright/test';
+
+// tests/login.spec.ts
+import { test, expect } from '../fixtures';
+
+test('locked user sees an error', async ({ loginPage }) => {
+  await loginPage.login('locked_out_user', 'secret_sauce');
+  await loginPage.expectError('locked out');
+});
+</script>
+<script type="text/plain" id="c-p5-data">
+const users = [
+  { name: 'standard_user',   ok: true  },
+  { name: 'locked_out_user', ok: false },
+  { name: 'problem_user',    ok: true  },
+];
+
+for (const u of users) {
+  test(`login as ${u.name}`, async ({ loginPage, page }) => {
+    await loginPage.login(u.name, 'secret_sauce');
+    if (u.ok) await expect(page).toHaveURL(/inventory/);
+    else await loginPage.expectError('locked out');
+  });
+}
+</script>
+<script type="text/plain" id="c-p5-tag">
+test('standard user can log in @smoke', async ({ loginPage, page }) => {
+  await loginPage.login('standard_user', 'secret_sauce');
+  await expect(page).toHaveURL(/inventory/);
+});
+
+// run only the smoke set:
+//   npx playwright test --grep @smoke
+</script>
+<script type="text/plain" id="c-p5-ci">
+# .github/workflows/playwright.yml
+name: Playwright Tests
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    timeout-minutes: 30
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+      - run: npm ci
+      - run: npx playwright install --with-deps
+      - run: npx playwright test
+      - uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 30
+</script>
+<script type="text/plain" id="c-p5-sql">
+SELECT id, status, total
+FROM orders
+WHERE status = 'PAID' AND created_at >= '2026-11-01'
+ORDER BY created_at DESC;
+
+SELECT o.id, c.email
+FROM orders o
+JOIN customers c ON c.id = o.customer_id
+WHERE o.status = 'FAILED';
+</script>
+
+<script type="text/plain" id="c-p6-tree">
+playwright-saucedemo-framework/
+├─ .github/workflows/playwright.yml
+├─ pages/        LoginPage.ts, InventoryPage.ts, CartPage.ts
+├─ tests/
+│  ├─ ui/        login.spec.ts, cart.spec.ts, checkout.spec.ts
+│  └─ api/       posts.spec.ts, users.spec.ts
+├─ fixtures.ts
+├─ playwright.config.ts
+└─ README.md
+</script>
+<script type="text/plain" id="c-p6-readme">
+# SauceDemo Test Automation
+
+![Playwright Tests](https://github.com/<user>/<repo>/actions/workflows/playwright.yml/badge.svg)
+
+Playwright and TypeScript framework with UI and API tests.
+
+## What is covered
+- Login: valid, invalid, locked-out and empty fields
+- Cart and checkout, end to end
+- REST API checks against JSONPlaceholder
+
+## Run it
+npm ci
+npx playwright install
+npx playwright test
+
+## Design decisions
+- Page Object Model and custom fixtures
+- @smoke and @regression tags
+- CI on every push, HTML report kept as an artifact
+</script>
+<script type="text/plain" id="c-p6-strategy">
+Feature            Risk   Runs often   Stable UI   Automate?
+Login              High   Daily        Yes         Yes, first
+Checkout           High   Daily        Mostly      Yes
+Profile settings   Low    Rarely       No          Not yet
+New promo banner   Low    Once         No          No, keep manual
+</script>
+<script>
+'use strict';
+/* ---------- content ---------- */
+const PHASES = [
+{
+  id:1, short:'Foundations', title:'Programming foundations', weeks:'Weeks 1 to 4', w:[1,4],
+  goal:'Read and write small TypeScript programs, fix your own errors, and keep your work in Git. Weeks 1 to 3 use plain JavaScript syntax. Types come in week 4.',
+  badge:{name:'Script Starter', desc:'Wrote your first scripts and pushed them to GitHub.'},
+  topics:[
+    {t:'Variables and data types', d:'let, const, strings, numbers and booleans. Think of them as the test data in your manual cases.'},
+    {t:'Conditionals and loops', d:'if and else, for and for...of. A loop lets one check run over many inputs.'},
+    {t:'Functions', d:'Reusable steps with inputs and a return value, including arrow functions.'},
+    {t:'Arrays and objects', d:'Lists of test cases and records of data. Learn map, filter, find and destructuring.'},
+    {t:'Async and await', d:'Promises and async/await. Every Playwright action is asynchronous, so this is the most important idea in the phase.'},
+    {t:'Modules and npm', d:'import and export, package.json, installing and running packages.'},
+    {t:'TypeScript basics', d:'Type annotations, interfaces and union types. Your editor uses them to autocomplete Playwright.'},
+    {t:'Git and GitHub', d:'init, add, commit, branch, push, and how to read a diff.'}
+  ],
+  steps:[
+    {t:'Install the tools', d:'Install Node.js (LTS version) and VS Code. Then create a project folder and add TypeScript and tsx, a small runner that executes .ts files directly.', code:'c-p1-init', lang:'bash'},
+    {t:'Turn manual cases into data', d:'Create login-checks.ts. Each manual test case becomes an object with steps and an expected result. The loop is a tiny test runner.', code:'c-p1-script', lang:'ts'},
+    {t:'Run it, then break it', d:'Run the script. Then change one expected value so a case fails, and delete a bracket so it will not compile. Read each error from the top before you change anything.', code:'c-p1-run', lang:'bash'},
+    {t:'Meet async and await', d:'Waiting is the heart of browser automation. This function pretends a page takes one second to load. Remove the await and watch the order of the messages change.', code:'c-p1-async', lang:'ts'},
+    {t:'Commit and push', d:'Create an empty repository on GitHub, then publish your project. Make a commit after each small change so your history tells the story.', code:'c-p1-git', lang:'bash'}
+  ],
+  exercises:[
+    'Write isValidEmail(email) and test it with 8 inputs: valid, missing @, spaces, empty and so on.',
+    'Take 5 of your real manual test cases and write them as an array of objects in code.',
+    'Use filter and map on an array of test results to list only the failed ones and print the pass rate.',
+    'Write an async function that waits 1 second with await before it logs a message.',
+    'Create a GitHub repository and push at least 3 meaningful commits.',
+    'Solve 10 beginner problems on the Exercism JavaScript track or freeCodeCamp.'
+  ],
+  takeaways:[
+    'A test case is data plus steps plus an expected result. You already write these. Code just runs them.',
+    'await pauses a function until a promise finishes. Forget it and your test races ahead of the page.',
+    'Read an error from the top: the message first, then the first line that points to your own file.',
+    'Small commits with clear messages are your safety net and your portfolio.'
+  ],
+  quiz:[
+    {q:'What does await do inside an async function?', o:['Pauses that function until the promise settles','Makes the code run faster','Runs the next line in parallel','Catches errors automatically'], a:0, why:'await waits for the promise result before the next line runs. Playwright relies on this everywhere.'},
+    {q:'Which keyword declares a variable you cannot reassign?', o:['var','let','const','static'], a:2, why:'const binds the name once. Prefer it by default and use let only when the value changes.'},
+    {q:'What does [1, 2, 3, 4].filter(n => n % 2 === 0) return?', o:['[1, 3]','[2, 4]','[2, 4, 6, 8]','true'], a:1, why:'filter keeps the items for which the function returns true, here the even numbers.'},
+    {q:'Your script crashes with a long stack trace. Where do you start?', o:['At the bottom, the oldest line','With the error message and the first line that points to your file','By re-running until it passes','By deleting node_modules'], a:1, why:'The message says what failed. The first frame in your own file says where to look.'}
+  ]
+},
+{
+  id:2, short:'Web and locators', title:'Web fundamentals and locators', weeks:'Weeks 5 and 6', w:[5,6],
+  goal:'Look at any page the way a test does: find the element, describe it with a stable locator, and confirm that it matches exactly one thing.',
+  badge:{name:'Locator Hunter', desc:'Can find any element with a selector that survives a redesign.'},
+  topics:[
+    {t:'HTML structure', d:'Elements, attributes, forms and links. Know what id, class, name and data-testid are for.'},
+    {t:'The DOM', d:'The browser keeps the page as a tree of elements. JavaScript and Playwright both work on that tree.'},
+    {t:'CSS selectors', d:'Tag, #id, .class, [attribute], descendant and child combinators, and :nth-child.'},
+    {t:'XPath basics', d:'Select by text, parent or sibling when CSS cannot.'},
+    {t:'Accessible roles and labels', d:'Roles such as button and textbox, plus labels. Playwright getByRole is built on these.'},
+    {t:'Chrome DevTools', d:'The Elements, Console and Network tabs, and how to test a selector in the console.'},
+    {t:'Forms and inputs', d:'Text fields, dropdowns, checkboxes, radios and file inputs, and how each one behaves.'}
+  ],
+  steps:[
+    {t:'Inspect a real element', d:'Open saucedemo.com, press F12, click the element picker and click the username box. Look for something like this in the Elements tab.', code:'c-p2-html', lang:'html'},
+    {t:'Write five selectors for it', d:'The same element can be reached in many ways. Write each of these down and note which attribute it depends on.', code:'c-p2-sel', lang:'text'},
+    {t:'Test them in the console', d:'Paste each selector into the Console. A good selector returns exactly one element.', code:'c-p2-console', lang:'js'},
+    {t:'Rank them', d:'Order your five selectors from most to least stable. Roles, labels and test ids usually win. Selectors that depend on position or long chains of divs lose. Keep this ranking, because Phase 3 builds on it.'},
+    {t:'Watch the network', d:'Open the Network tab, reload the page, and click a few requests. Read the status code, the method and the content type. You will test these directly in Phase 4.'}
+  ],
+  exercises:[
+    'On saucedemo.com, write a CSS selector and an XPath for six elements: username, password, login button, a product name, the first Add to cart button and the cart icon.',
+    'Confirm in the console that each selector returns exactly one element.',
+    'Find three elements that have no id and write a stable selector for each.',
+    'Rewrite three brittle selectors such as div > div:nth-child(3) > span into ones that survive a layout change.',
+    'Open the Network tab, reload a page, and note the status code and content type of three requests.'
+  ],
+  takeaways:[
+    'Prefer what a user can see, or what developers added for testing: role, label and test id. Avoid position in the page.',
+    'A good selector matches exactly one element. Check the count before you trust it.',
+    'Position-based selectors break on the next redesign and are a top cause of flaky UI tests.',
+    'DevTools is your debugger. Most locator problems are solved in the console before any code is written.'
+  ],
+  quiz:[
+    {q:'Which locator is most likely to survive a page redesign?', o:['div > div:nth-child(3) > span','//div[4]/span','A role and accessible name, such as the button named Login','The element position in pixels'], a:2, why:'Roles and names describe what the element is. Position and nesting change whenever the layout does.'},
+    {q:'Which CSS selector matches an element with id login-button?', o:['#login-button','.login-button','login-button','[login-button]'], a:0, why:'# selects by id and . selects by class.'},
+    {q:'What does the Network tab show?', o:['The page CSS rules','Requests the page makes, with status codes and timing','Your Git history','Unused variables'], a:1, why:'It lists every request and response, which is where you confirm what the API really returned.'},
+    {q:'Your selector returns 3 matches in the console. What should you do?', o:['Use it, Playwright will pick the right one','Make it more specific until it returns 1','Add a sleep','Switch to XPath with the same logic'], a:1, why:'Ambiguous locators cause tests to hit the wrong element. Narrow it down.'}
+  ]
+},
+{
+  id:3, short:'Playwright UI', title:'UI automation with Playwright', weeks:'Weeks 7 to 12', w:[7,12],
+  goal:'Write reliable browser tests in TypeScript, run them across browsers, and debug failures with the trace viewer.',
+  badge:{name:'Browser Driver', desc:'Built a working Playwright UI suite with debugging skills.'},
+  topics:[
+    {t:'Setup and project structure', d:'npm init playwright@latest, playwright.config.ts and the tests folder.'},
+    {t:'Your first test', d:'test, expect and the page fixture.'},
+    {t:'Locators', d:'getByRole, getByLabel, getByPlaceholder, getByText, getByTestId and locator() for CSS.'},
+    {t:'Actions', d:'click, fill, selectOption, check, press, hover and file upload.'},
+    {t:'Auto-waiting and web-first assertions', d:'toBeVisible, toHaveText and toHaveURL retry until the timeout, so you rarely need sleeps.'},
+    {t:'Hooks and grouping', d:'test.describe, beforeEach, afterEach and test isolation.'},
+    {t:'Debugging tools', d:'UI mode, --debug, the trace viewer, codegen and screenshots on failure.'},
+    {t:'Config and browsers', d:'Projects for Chromium, Firefox and WebKit, baseURL, retries and reporters.'},
+    {t:'Tricky UI', d:'Dialogs, iframes, file upload, new tabs and downloads.'}
+  ],
+  steps:[
+    {t:'Create the project', d:'Choose TypeScript, keep the tests folder, and say yes to the GitHub Actions workflow. You will use it in Phase 5.', code:'c-p3-init', lang:'bash'},
+    {t:'Write your first tests', d:'Replace the example test with two login tests. Notice that there is no sleep anywhere. Playwright waits for each element to be ready.', code:'c-p3-test', lang:'ts'},
+    {t:'Run them four ways', d:'Start with UI mode. Click a step in the timeline and see the page as it was at that moment.', code:'c-p3-run', lang:'bash'},
+    {t:'Try codegen', d:'Codegen opens a browser and writes code as you click. Use it to learn syntax and to find locators, then rewrite the output with locators you trust.', code:'c-p3-codegen', lang:'bash'},
+    {t:'Share setup with a hook', d:'beforeEach runs before every test in the file, so login is written once. Each test still starts from a fresh browser context.', code:'c-p3-cart', lang:'ts'},
+    {t:'Make failures easy to diagnose', d:'Keep a trace on the first retry and a screenshot on failure. When a test fails in CI, open the trace and step through it.', code:'c-p3-config', lang:'ts'}
+  ],
+  exercises:[
+    'Automate five of your own manual cases on saucedemo.com: valid login, wrong password, locked-out user, empty fields and logout.',
+    'Add a test that adds an item to the cart and checks the badge count.',
+    'Automate the full checkout flow with an assertion on the order confirmation.',
+    'Run the suite in Chromium, Firefox and WebKit using projects in the config.',
+    'Break a locator on purpose and find the cause using the trace viewer.',
+    'Record a flow with codegen, then clean up the generated code by hand.'
+  ],
+  takeaways:[
+    'Playwright waits for elements for you. Avoid waitForTimeout and assert on what a user would see.',
+    'Every test must pass on its own and in any order. Shared state is where flakiness starts.',
+    'Open the trace viewer before you start guessing. It shows each step, the DOM and the network.',
+    'Codegen is a starting point. You still choose stable locators and add assertions.'
+  ],
+  quiz:[
+    {q:'How does await expect(locator).toBeVisible() differ from expect(await locator.isVisible()).toBe(true)?', o:['The first retries until the timeout, the second checks once','They are identical','The first only works in Chromium','The second waits longer'], a:0, why:'Web-first assertions retry. A one-time boolean check can fail while the page is still loading.'},
+    {q:'Which command opens UI mode?', o:['npx playwright test --ui','npx playwright ui','npx playwright open','npx playwright test --watch'], a:0, why:'The --ui flag starts UI mode, which combines a test list, a timeline and a DOM snapshot.'},
+    {q:'A button appears 2 seconds after the page loads. What is the best approach?', o:['await page.waitForTimeout(2000)','Click it and let auto-waiting handle it, then assert the result','Reload the page until it shows','Raise retries to 10'], a:1, why:'Actions wait until the element is visible and enabled. Fixed sleeps are slow and still flaky.'},
+    {q:'Which tool records your clicks and typing as test code?', o:['Trace viewer','Codegen','HTML reporter','Fixtures'], a:1, why:'Codegen records actions and suggests locators. Review and clean up what it writes.'}
+  ]
+},
+{
+  id:4, short:'API testing', title:'API testing', weeks:'Weeks 13 to 15', w:[13,15],
+  goal:'Test REST endpoints by hand in Postman, then automate the same checks in Playwright, including negative cases.',
+  badge:{name:'API Inspector', desc:'Automated REST checks with positive and negative cases.'},
+  topics:[
+    {t:'HTTP methods and status codes', d:'GET, POST, PUT, PATCH and DELETE. 2xx means success, 4xx a client error, 5xx a server error.'},
+    {t:'JSON, headers and query parameters', d:'Read and build request bodies, content types and filters.'},
+    {t:'Authentication', d:'API keys, Bearer tokens and cookies, and why 401 differs from 403.'},
+    {t:'Postman', d:'Collections, environments, variables and the Tests tab.'},
+    {t:'Playwright request fixture', d:'request.get, post, put and delete, and reading response.json().'},
+    {t:'What to assert', d:'Status code, required fields, types, headers and response time.'},
+    {t:'Negative and boundary cases', d:'Missing fields, wrong types, bad ids and expired tokens.'},
+    {t:'APIs inside UI tests', d:'Create test data through the API, then verify it in the UI to save time.'}
+  ],
+  steps:[
+    {t:'Explore by hand first', d:'In Postman, send GET https://jsonplaceholder.typicode.com/posts/1. Read the status, the headers and the JSON body. Then send a POST with a JSON body and compare the response.'},
+    {t:'Automate GET and POST', d:'The request fixture needs no browser, so these tests run in milliseconds. Assert the status and the body.', code:'c-p4-api', lang:'ts'},
+    {t:'Add negative checks', d:'Look for what should fail. Also check a whole list instead of one record.', code:'c-p4-neg', lang:'ts'},
+    {t:'Send credentials', d:'Most real APIs need a token. Read it from an environment variable and never commit it to Git. This is a pattern to use on your own app, not a runnable example.', code:'c-p4-auth', lang:'ts'}
+  ],
+  exercises:[
+    'Build a Postman collection against jsonplaceholder.typicode.com with GET, POST, PUT and DELETE, each with a test in the Tests tab.',
+    'Port the same checks to Playwright with the request fixture.',
+    'Write three negative tests: unknown id, empty body and wrong method.',
+    'Loop through /users and assert every record has a valid email and a non-empty name.',
+    'On your own app or a practice site, create data through the API and confirm it appears in the UI.'
+  ],
+  takeaways:[
+    'API tests run in milliseconds and break less often than UI tests, so cover logic here first.',
+    'Assert the status code and the body. A 200 with the wrong data is still a bug.',
+    'Negative tests find more real defects than happy paths.',
+    'JSONPlaceholder fakes writes. It returns success but saves nothing, so do not chain create then fetch on it.'
+  ],
+  quiz:[
+    {q:'Which status code means a resource was created?', o:['200','201','204','301'], a:1, why:'201 Created is the standard response to a successful POST that creates something.'},
+    {q:'A request with no token returns 401. A valid token without permission returns:', o:['200','401','403','404'], a:2, why:'401 means not authenticated. 403 means authenticated but not allowed.'},
+    {q:'Why test at the API layer?', o:['It looks better in reports','It is faster and more stable than driving a browser','It replaces all UI tests','It needs no assertions'], a:1, why:'No rendering and no waiting means quick, steady feedback. You still keep a few UI tests for real user flows.'},
+    {q:'What does response.json() give you in Playwright?', o:['A promise that resolves to the parsed body','The HTTP status','The raw HTML','A screenshot'], a:0, why:'It returns a promise, so use await. Then you can assert on fields.'}
+  ]
+},
+{
+  id:5, short:'Framework and CI', title:'Framework, CI/CD and data', weeks:'Weeks 16 to 20', w:[16,20],
+  goal:'Turn loose tests into a maintainable framework that runs automatically on GitHub and produces a report.',
+  badge:{name:'Pipeline Builder', desc:'Delivered a structured framework with a green CI pipeline.'},
+  topics:[
+    {t:'Page Object Model', d:'One class per page holds locators and actions, so a UI change is fixed in one place.'},
+    {t:'Custom fixtures', d:'test.extend gives tests ready-made setup, such as a logged-in page.'},
+    {t:'Data-driven tests', d:'Run one test body over many inputs from arrays or JSON files.'},
+    {t:'Environments and config', d:'baseURL, .env files and per-environment settings.'},
+    {t:'Tags and test selection', d:'@smoke and @regression with --grep, and running one file or one test.'},
+    {t:'Reporting', d:'The HTML report, traces on retry, and an optional Allure report.'},
+    {t:'CI with GitHub Actions', d:'Run the suite on every push and keep the report as an artifact.'},
+    {t:'Flaky tests', d:'Find the cause: timing, shared data or environment. Treat retries as a signal, not a fix.'},
+    {t:'SQL basics', d:'SELECT, WHERE, ORDER BY, JOIN and COUNT to check the data behind the UI.'}
+  ],
+  steps:[
+    {t:'Move locators into a page object', d:'Tests describe what the user does. The page object knows how. Set baseURL in the config so open() can go to /.', code:'c-p5-pom', lang:'ts'},
+    {t:'Share setup with a fixture', d:'A fixture builds the page object and opens the site, so each test starts with one line of setup.', code:'c-p5-fixture', lang:'ts'},
+    {t:'Drive tests from data', d:'One body, three tests. Add a row to add a test. Later, move the rows to a JSON file.', code:'c-p5-data', lang:'ts'},
+    {t:'Tag a smoke set', d:'Smoke tests are the few checks that tell you whether a build is worth testing further.', code:'c-p5-tag', lang:'ts'},
+    {t:'Run it on every push', d:'Commit this workflow. Open the Actions tab on GitHub and wait for a green run. Download the report from the run page.', code:'c-p5-ci', lang:'yaml'},
+    {t:'Check the data behind the UI', d:'When a UI test says an order is paid, a query can confirm the row. Practise on sqlbolt.com and then on a sample database.', code:'c-p5-sql', lang:'sql'}
+  ],
+  exercises:[
+    'Refactor your Phase 3 tests into page objects: LoginPage, InventoryPage, CartPage and CheckoutPage.',
+    'Create a fixture that gives each test a page that is already logged in.',
+    'Drive login tests from a JSON file with at least six users.',
+    'Tag a handful of tests @smoke and run only those with --grep.',
+    'Push the project to GitHub and get a green GitHub Actions run with the HTML report attached.',
+    'Finish the first 12 lessons on sqlbolt.com and write three queries against a sample database.'
+  ],
+  takeaways:[
+    'A framework is a few small, reusable pieces. Do not build a large one before you need it.',
+    'CI turns your tests into a safety net that runs without you.',
+    'When a test is flaky, find the cause. Retrying hides the problem.',
+    'Keep locators in page objects and assertions in tests.'
+  ],
+  quiz:[
+    {q:'What is the main benefit of the Page Object Model?', o:['Tests run faster','A UI change is fixed in one place instead of every test','It removes the need for assertions','It replaces fixtures'], a:1, why:'Locators live in one class, so a changed button means one edit.'},
+    {q:'Which command runs only tests tagged @smoke?', o:['npx playwright test --grep @smoke','npx playwright smoke','npx playwright test --tag smoke','npx playwright test @smoke.ts'], a:0, why:'--grep matches the test title, so a tag in the title selects the group.'},
+    {q:'In GitHub Actions, which step installs the browsers Playwright needs?', o:['npm ci','npx playwright install --with-deps','git checkout','npm run build'], a:1, why:'npm ci installs packages. The playwright install step downloads the browsers and system dependencies.'},
+    {q:'A test passes on retry but fails on the first run. What should you do?', o:['Raise retries to 3 and move on','Treat it as flaky and investigate with the trace','Delete the test','Add waitForTimeout(5000)'], a:1, why:'A pass on retry is a symptom. Use the trace of the failed attempt to find the cause.'}
+  ]
+},
+{
+  id:6, short:'Portfolio and career', title:'Portfolio and job transition', weeks:'Weeks 21 to 24', w:[21,24],
+  goal:'Package your work so a hiring manager can see it run, and start moving automation into your current job or your next one.',
+  badge:{name:'Career Switcher', desc:'Published a portfolio and prepared for automation interviews.'},
+  topics:[
+    {t:'Test strategy', d:'The test pyramid, what to automate first and what to leave manual.'},
+    {t:'Choosing regression candidates', d:'Stable, repeated, high-risk flows are best. One-off and fast-changing screens are not.'},
+    {t:'Portfolio repository', d:'Folder structure, README, CI badge and a short demo.'},
+    {t:'Reporting results', d:'Turn failures into clear bug reports with steps, trace and screenshot.'},
+    {t:'Interview preparation', d:'Locators, waits, POM, flaky tests, CI and a walk-through of your project.'},
+    {t:'CV and LinkedIn', d:'Show Playwright, TypeScript, API testing and GitHub Actions with a link to evidence.'},
+    {t:'Certification (optional)', d:'ISTQB Foundation Level gives you shared vocabulary that many employers recognise.'},
+    {t:'Working with developers', d:'Explain what automation covers and what it does not.'}
+  ],
+  steps:[
+    {t:'Lay out the repository', d:'Recruiters skim. A clear structure shows you know how a team project is organised.', code:'c-p6-tree', lang:'text'},
+    {t:'Write the README they read', d:'Lead with what is covered and how to run it. Add the CI badge so the first thing they see is a passing build.', code:'c-p6-readme', lang:'markdown'},
+    {t:'Write a one-page test strategy', d:'List your current app features and score them. The result is your automation backlog, and it is a good interview document.', code:'c-p6-strategy', lang:'text'},
+    {t:'Start inside your job', d:'Ask to automate three stable regression cases from your own test plan. Share the report with the team. Internal experience is the quickest route to an automation role.'},
+    {t:'Update CV, LinkedIn and GitHub', d:'Put the repository link at the top. Name the tools, and describe each result in numbers, such as 24 UI tests and 12 API tests running in 4 minutes on every push.'}
+  ],
+  exercises:[
+    'Publish a public repository, for example playwright-saucedemo-framework, with UI and API tests, CI and a README.',
+    'Write a one-page test strategy for your current app with the top 10 regression candidates and why.',
+    'Automate three real regression cases at work, or on a practice site if work is not possible.',
+    'Record a 2-minute screen demo of the suite running and link it in the README.',
+    'Update your CV and LinkedIn with your tools and a link to the repository.',
+    'Practise 15 interview questions out loud, including a walk-through of your framework.'
+  ],
+  takeaways:[
+    'Employers hire people who can show working tests. A small repository with CI beats a long list of courses.',
+    'Automate the stable, repeated and high-risk flows first.',
+    'Your manual testing experience is an advantage. You know where products break.',
+    'Keep learning in public and commit every week.'
+  ],
+  quiz:[
+    {q:'Which test should you automate first?', o:['A one-time check of a new banner','A stable, high-risk flow that runs every release','A screen that changes every sprint','Anything that is hard to do manually'], a:1, why:'Repeated, stable and high-risk flows give the best return on automation effort.'},
+    {q:'In the test pyramid, which layer should have the most tests?', o:['UI end-to-end','API and integration','Unit','Manual exploratory'], a:2, why:'Lower layers are faster and cheaper, so the pyramid is widest at unit tests and narrowest at UI.'},
+    {q:'What makes a portfolio repository convincing?', o:['Many copied tutorial files','A clear README, CI badge, passing tests and readable code','A very large number of dependencies','Private visibility'], a:1, why:'People want to see it run and understand your choices quickly.'},
+    {q:'A bug report from an automated failure should include:', o:['Only the test name','Steps, expected and actual result, and the trace or screenshot','A guess at the root cause only','Nothing, the report is enough'], a:1, why:'A developer should be able to reproduce the problem without asking you.'}
+  ]
+}
+];
+
+const WEEKS = [
+ ['Variables, types and conditionals','Five small scripts'],
+ ['Loops, functions and arrays','login-checks.ts running'],
+ ['Objects, async/await and modules','The async wait script'],
+ ['TypeScript basics, Git and GitHub','Repository with 3 or more commits'],
+ ['HTML, the DOM, DevTools and CSS selectors','Selector sheet for six elements'],
+ ['XPath, roles and the Network tab','Locator audit of one page'],
+ ['Install Playwright, first tests, codegen','Three login tests'],
+ ['Locators and actions in depth','Add-to-cart test'],
+ ['Auto-waiting, assertions and hooks','Checkout test'],
+ ['Debugging with UI mode and the trace viewer','A broken suite you fixed'],
+ ['Config, browsers, retries, dialogs and iframes','Cross-browser run'],
+ ['UI mini-suite','10 stable UI tests'],
+ ['HTTP, status codes and Postman','Postman collection'],
+ ['Playwright request fixture','6 API tests'],
+ ['Negative tests, auth and API setup for UI tests','Phase 4 milestone'],
+ ['Page Object Model','Tests refactored into page objects'],
+ ['Fixtures and data-driven tests','JSON-driven login tests'],
+ ['Environments, tags and reports','@smoke run and HTML report'],
+ ['GitHub Actions','A green pipeline'],
+ ['SQL basics and flaky test analysis','SQLBolt lessons and a flaky log'],
+ ['Test strategy and regression candidates','One-page strategy'],
+ ['Automate real cases','3 real regression cases'],
+ ['Portfolio polish','README, badge and demo'],
+ ['CV, LinkedIn and interview practice','First applications sent']
+];
+
+/* ---------- state ---------- */
+const KEY = 'qa-roadmap-v1';
+const PASS_AT = 3;
+let S = {topics:{}, ex:{}, weeks:{}, quiz:{}, links:{}, earned:{}};
+try {
+  const raw = localStorage.getItem(KEY);
+  if (raw) { const p = JSON.parse(raw); if (p && typeof p === 'object') S = Object.assign(S, p); }
+} catch (e) {}
+const save = () => { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} };
+const $ = (s, r = document) => r.querySelector(s);
+const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+const codeOf = id => { const el = document.getElementById(id); return el ? el.textContent.replace(/^\n/,'').replace(/\n$/,'') : ''; };
+const key = (p, i) => p + '-' + i;
+const setFlag = (obj, k, on) => { if (on) obj[k] = true; else delete obj[k]; };
+function today() { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'); }
+
+/* ---------- progress ---------- */
+function counts(p) {
+  const t = p.topics.filter((_, i) => S.topics[key(p.id, i)]).length;
+  const e = p.exercises.filter((_, i) => S.ex[key(p.id, i)]).length;
+  const qz = S.quiz[p.id];
+  const passed = !!(qz && qz.done && qz.score >= PASS_AT);
+  return {t, e, tt: p.topics.length, et: p.exercises.length, passed, done: t + e, total: p.topics.length + p.exercises.length};
+}
+const qualifies = p => { const c = counts(p); return c.t === c.tt && c.e === c.et && c.passed; };
+const isEarned = p => !!S.earned[p.id];
+function syncEarned() { PHASES.forEach(p => { if (!S.earned[p.id] && qualifies(p)) S.earned[p.id] = today(); }); }
+function status(p) {
+  if (isEarned(p)) return 'pass';
+  const c = counts(p), q = S.quiz[p.id];
+  return (c.done > 0 || (q && q.done)) ? 'run' : 'todo';
+}
+function overall() {
+  let d = 0, t = 0;
+  PHASES.forEach(p => { const c = counts(p); d += c.done; t += c.total; });
+  return {d, t, pct: t ? Math.round(d / t * 100) : 0};
+}
+const weeksDone = () => Object.keys(S.weeks).filter(k => S.weeks[k]).length;
+const earnedCount = () => PHASES.filter(isEarned).length;
+const CHIP = {todo:'TODO', run:'RUN', pass:'PASS'};
+
+/* ---------- shared pieces ---------- */
+function bar(pct, label) {
+  return `<div class="bar" role="progressbar" aria-label="${esc(label)}" aria-valuenow="${pct}" aria-valuemin="0" aria-valuemax="100"><i style="width:${pct}%"></i></div>`;
+}
+function badgeSvg(n, earned) {
+  const pts = '40,3 75,22 75,70 40,89 5,70 5,22';
+  if (earned) {
+    return `<svg viewBox="0 0 80 92" role="img" aria-label="Phase ${n} badge, earned"><polygon points="${pts}" style="fill:var(--accent)"/><polygon points="40,12 67,27 67,65 40,80 13,65 13,27" style="fill:none;stroke:var(--accent-fg);stroke-opacity:.5;stroke-width:1.5"/><text x="40" y="53" text-anchor="middle" style="fill:var(--accent-fg);font-family:var(--font-mono);font-weight:600;font-size:20px">P${n}</text></svg>`;
+  }
+  return `<svg viewBox="0 0 80 92" role="img" aria-label="Phase ${n} badge, locked"><polygon points="${pts}" style="fill:none;stroke:var(--muted);stroke-opacity:.6;stroke-width:2;stroke-dasharray:5 4"/><text x="40" y="53" text-anchor="middle" style="fill:var(--muted);font-family:var(--font-mono);font-weight:600;font-size:20px">P${n}</text></svg>`;
+}
+function reqs(p) {
+  const c = counts(p);
+  const r = (ok, txt) => `<span class="req${ok ? ' ok' : ''}">${ok ? 'DONE' : 'TODO'} ${txt}</span>`;
+  return `<div class="reqs">${r(c.t === c.tt, 'topics ' + c.t + '/' + c.tt)}${r(c.e === c.et, 'exercises ' + c.e + '/' + c.et)}${r(c.passed, 'quiz ' + PASS_AT + '/' + p.quiz.length)}</div>`;
+}
+function codeBlock(id, lang) {
+  return `<div class="code"><div class="bar-top"><span class="lang">${esc(lang || 'text')}</span><button class="copy" type="button" data-copy="${id}">Copy</button></div><pre><code>${esc(codeOf(id))}</code></pre></div>`;
+}
+function item(kind, pid, i, title, desc) {
+  const k = key(pid, i);
+  const on = kind === 'topic' ? S.topics[k] : S.ex[k];
+  return `<li><label class="item${on ? ' done' : ''}"><input type="checkbox" data-kind="${kind}" data-p="${pid}" data-i="${i}"${on ? ' checked' : ''}><div><b>${esc(title)}</b>${desc ? `<span>${esc(desc)}</span>` : ''}</div></label></li>`;
+}
+
+/* ---------- chrome ---------- */
+function renderChrome(r) {
+  const o = overall();
+  $('#overall').innerHTML = `<div class="row"><span class="label">Progress</span><span class="pct">${o.pct}%</span></div>${bar(o.pct, 'Overall progress')}<span class="label">${o.d} of ${o.t} items &middot; ${earnedCount()} of 6 badges</span>`;
+  const link = (id, label, sub, chip) =>
+    `<a href="#${id}"${r === id ? ' aria-current="page"' : ''}><span>${label}${sub ? `<small>${esc(sub)}</small>` : ''}</span>${chip ? `<span class="chip ${chip}">${CHIP[chip]}</span>` : ''}</a>`;
+  $('#nav').innerHTML =
+    link('overview', 'Overview', '', '') +
+    PHASES.map(p => link('phase-' + p.id, 'Phase ' + p.id, p.short, status(p))).join('') +
+    '<div class="sep"></div>' +
+    link('plan', 'Weekly plan', weeksDone() + ' of 24 weeks done', '') +
+    link('badges', 'Badges', earnedCount() + ' of 6 earned', '');
+}
+
+/* ---------- views ---------- */
+function viewOverview() {
+  const cards = PHASES.map(p => {
+    const c = counts(p), pct = c.total ? Math.round(c.done / c.total * 100) : 0, st = status(p);
+    return `<a class="card" href="#phase-${p.id}"><div class="top"><span class="label">Phase ${p.id} &middot; ${esc(p.weeks)}</span><span class="chip ${st}">${CHIP[st]}</span></div><h3>${esc(p.title)}</h3><p>${esc(p.goal)}</p>${bar(pct, p.title + ' progress')}<span class="label">${c.done} of ${c.total} items &middot; Badge: ${esc(p.badge.name)}</span></a>`;
+  }).join('');
+  return `
+  <section class="hero">
+    <div class="eyebrow"><span class="label">24 weeks</span><span class="label">1 to 2 hours a day</span></div>
+    <h1>From manual tester to Playwright automation engineer</h1>
+    <p class="lead">Six phases. Each one has topics to learn, a hands-on tutorial, exercises, key takeaways, a quiz and a badge you can show on GitHub or LinkedIn. Your progress is saved in this browser.</p>
+    <a class="btn" href="#phase-1" style="display:inline-block;width:fit-content;text-decoration:none">Start Phase 1</a>
+  </section>
+  <section class="callout">
+    <span class="label">Which language for Playwright?</span>
+    <h2>TypeScript, learned in two steps</h2>
+    <p>Playwright is built on Node.js. Its test runner, UI mode, trace viewer and code generator work best with TypeScript and JavaScript, and new features arrive there first. TypeScript also lets your editor autocomplete every Playwright method, which helps a lot while you learn.</p>
+    <ul>
+      <li>Weeks 1 to 3: plain JavaScript syntax (variables, functions, arrays, async and await).</li>
+      <li>Week 4: add TypeScript types on top of what you already know.</li>
+      <li>If your company uses Python, Playwright supports it too. Follow the same roadmap and use pytest-playwright.</li>
+    </ul>
+  </section>
+  <section class="section"><header><h2>The six phases</h2></header><div class="cards">${cards}</div></section>
+  <section class="section"><header><h2>Inside every phase</h2></header>
+    <div class="legend">
+      <div><b>Topics</b><span>A checklist of what to understand.</span></div>
+      <div><b>Mini-tutorial</b><span>Numbered steps with code you can copy.</span></div>
+      <div><b>Exercises</b><span>Practice tasks that become portfolio items.</span></div>
+      <div><b>Key takeaways</b><span>The ideas to keep after the phase.</span></div>
+      <div><b>Quiz</b><span>Four questions. Pass with 3 of 4.</span></div>
+      <div><b>Badge</b><span>Earned when topics, exercises and quiz are done.</span></div>
+    </div>
+  </section>`;
+}
+
+function progressBlock(p) {
+  const c = counts(p), pct = c.total ? Math.round(c.done / c.total * 100) : 0, q = S.quiz[p.id];
+  const qs = q && q.done ? 'quiz ' + q.score + '/' + p.quiz.length : 'quiz not taken';
+  return `${bar(pct, 'Phase ' + p.id + ' progress')}<span class="label">${c.t} of ${c.tt} topics &middot; ${c.e} of ${c.et} exercises &middot; ${qs}</span>`;
+}
+function badgeBlock(p) {
+  const earned = isEarned(p);
+  return `<div class="badge-block">${badgeSvg(p.id, earned)}<div><h3>${esc(p.badge.name)}</h3><p>${esc(p.badge.desc)}</p>${reqs(p)}${earned ? `<p class="why" style="margin-top:8px">Earned on ${S.earned[p.id]}. Copy it for your README from the <a href="#badges">Badges page</a>.</p>` : ''}</div></div>`;
+}
+function quizList(p) {
+  const st = S.quiz[p.id] || {sel: [], done: false, score: 0}, sel = st.sel || [];
+  return p.quiz.map((q, qi) => `<div class="q"><b>${qi + 1}. ${esc(q.q)}</b>${q.o.map((o, oi) => {
+    let cls = 'opt';
+    if (st.done) { if (oi === q.a) cls += ' right'; else if (sel[qi] === oi) cls += ' wrong'; }
+    return `<label class="${cls}"><input type="radio" name="q-${p.id}-${qi}" data-quiz="${p.id}" data-q="${qi}" data-o="${oi}"${sel[qi] === oi ? ' checked' : ''}${st.done ? ' disabled' : ''}><span>${esc(o)}</span></label>`;
+  }).join('')}${st.done ? `<p class="why">${esc(q.why)}</p>` : ''}</div>`).join('');
+}
+function quizFoot(p) {
+  const st = S.quiz[p.id] || {sel: [], done: false, score: 0}, sel = st.sel || [], n = p.quiz.length;
+  if (st.done) {
+    const pass = st.score >= PASS_AT;
+    return `<div class="result"><span class="score">${st.score} / ${n}</span><span>${pass ? 'Passed. Nice work.' : 'The pass mark is ' + PASS_AT + ' of ' + n + '. Review the takeaways and try again.'}</span><button class="btn ghost" type="button" data-act="retake" data-p="${p.id}">Retake quiz</button></div>`;
+  }
+  const answered = p.quiz.filter((_, i) => Number.isInteger(sel[i])).length;
+  return `<div class="result"><button class="btn" type="button" data-act="grade" data-p="${p.id}"${answered === n ? '' : ' disabled'}>Check answers</button><span class="label">${answered} of ${n} answered</span></div>`;
+}
+const quizBlock = p => `<div class="quiz"><div id="qlist" class="quiz">${quizList(p)}</div><div id="qfoot">${quizFoot(p)}</div></div>`;
+
+function viewPhase(p) {
+  const prev = PHASES[p.id - 2], next = PHASES[p.id];
+  const steps = p.steps.map((s, k) => `<div class="step"><div class="n">${k + 1}</div><div class="body"><h3>${esc(s.t)}</h3><p>${esc(s.d)}</p>${s.code ? codeBlock(s.code, s.lang) : ''}</div></div>`).join('');
+  return `
+  <header class="hero">
+    <div class="eyebrow"><span class="label">Phase ${p.id} of 6</span><span class="label">${esc(p.weeks)}</span></div>
+    <h1>${esc(p.title)}</h1>
+    <p class="lead">${esc(p.goal)}</p>
+    <div id="pprog" style="display:flex;flex-direction:column;gap:8px">${progressBlock(p)}</div>
+  </header>
+  <section class="section"><header><h2>Topics</h2><p class="why">Tick a topic when you can explain it in your own words.</p></header>
+    <ul class="list">${p.topics.map((t, i) => item('topic', p.id, i, t.t, t.d)).join('')}</ul></section>
+  <section class="section"><header><h2>Mini-tutorial</h2><p class="why">Follow along on your computer. Type the code yourself when you can, and paste only when you are stuck.</p></header>
+    <div class="steps">${steps}</div></section>
+  <section class="section"><header><h2>Exercises</h2><p class="why">Do these after the tutorial. Keep the results in a GitHub repository.</p></header>
+    <ul class="list">${p.exercises.map((t, i) => item('ex', p.id, i, t, '')).join('')}</ul></section>
+  <section class="section"><header><h2>Key takeaways</h2></header>
+    <div class="take">${p.takeaways.map(t => `<div>${esc(t)}</div>`).join('')}</div></section>
+  <section class="section"><header><h2>Quiz</h2><p class="why">Four questions. You need ${PASS_AT} correct to pass, and you can retake it.</p></header>
+    <div id="quiz">${quizBlock(p)}</div></section>
+  <section class="section"><header><h2>Your badge</h2></header><div id="pbadge">${badgeBlock(p)}</div></section>
+  <nav class="pager" aria-label="Phase navigation">
+    ${prev ? `<a href="#phase-${prev.id}">&larr; Phase ${prev.id}: ${esc(prev.short)}</a>` : '<a href="#overview">&larr; Overview</a>'}
+    ${next ? `<a href="#phase-${next.id}">Phase ${next.id}: ${esc(next.short)} &rarr;</a>` : '<a href="#badges">Your badges &rarr;</a>'}
+  </nav>`;
+}
+
+function weekProgress() {
+  const d = weeksDone(), pct = Math.round(d / 24 * 100);
+  return `${bar(pct, 'Weeks completed')}<span class="label">${d} of 24 weeks done</span>`;
+}
+function viewPlan() {
+  const groups = PHASES.map(p => {
+    let rows = '';
+    for (let w = p.w[0]; w <= p.w[1]; w++) {
+      const d = !!S.weeks[w], r = WEEKS[w - 1];
+      rows += `<label class="wk${d ? ' done' : ''}"><input type="checkbox" data-kind="week" data-i="${w}"${d ? ' checked' : ''}><span class="w">W${w}</span><div><small>Focus</small>${esc(r[0])}</div><div><small>Deliverable</small>${esc(r[1])}</div></label>`;
+    }
+    return `<div class="wk-group"><h3><span>Phase ${p.id}: ${esc(p.title)}</span><span class="label">${esc(p.weeks)}</span></h3>${rows}</div>`;
+  }).join('');
+  return `
+  <header class="hero">
+    <div class="eyebrow"><span class="label">1 to 2 hours a day</span><span class="label">24 weeks</span></div>
+    <h1>Weekly study plan</h1>
+    <p class="lead">One focus and one deliverable per week. Tick a week when its deliverable is finished and saved in your repository.</p>
+    <div id="wprog" style="display:flex;flex-direction:column;gap:8px">${weekProgress()}</div>
+  </header>
+  <section class="section">${groups}</section>`;
+}
+
+function buildLog() {
+  const o = overall();
+  let m = '## QA automation learning log\n\n';
+  m += 'Path: manual testing to Playwright with TypeScript. Progress: ' + o.pct + '% (' + weeksDone() + ' of 24 weeks).\n\n';
+  const earned = PHASES.filter(isEarned);
+  if (earned.length) {
+    m += earned.map(p => '![Phase ' + p.id + ': ' + p.badge.name + '](https://img.shields.io/badge/Phase_' + p.id + '-' + p.badge.name.replace(/ /g, '_') + '-0B6B5F)').join(' ') + '\n\n';
+  }
+  m += PHASES.map(p => {
+    const l = (S.links[p.id] || '').trim();
+    return '- Phase ' + p.id + ', ' + p.title + ': ' + (isEarned(p) ? 'badge "' + p.badge.name + '" earned ' + S.earned[p.id] : 'in progress') + (l ? ' ([work](' + l + '))' : '');
+  }).join('\n') + '\n';
+  return m;
+}
+function viewBadges() {
+  const cards = PHASES.map(p => {
+    const e = isEarned(p);
+    return `<div class="bcard${e ? '' : ' locked'}"><div class="head">${badgeSvg(p.id, e)}<div><span class="label">Phase ${p.id}${e ? ' &middot; earned ' + S.earned[p.id] : ' &middot; locked'}</span><h3>${esc(p.badge.name)}</h3><p class="why">${esc(p.badge.desc)}</p></div></div>${reqs(p)}<div class="field"><label class="label" for="link-${p.id}">Link to your work</label><input id="link-${p.id}" type="url" data-link="${p.id}" placeholder="https://github.com/you/repository" value="${esc(S.links[p.id] || '')}"></div></div>`;
+  }).join('');
+  return `
+  <header class="hero">
+    <div class="eyebrow"><span class="label">Achievements</span><span class="label">${earnedCount()} of 6 earned</span></div>
+    <h1>Badges and learning log</h1>
+    <p class="lead">A badge unlocks when you finish every topic and exercise in a phase and pass its quiz. Add a link to the repository that proves it, then copy the log into the README of your learning project or into a LinkedIn post.</p>
+  </header>
+  <section class="section"><div class="bgrid">${cards}</div></section>
+  <section class="section"><header><h2>Learning log</h2><p class="why">Markdown for your GitHub README. It updates as you progress. The badge images load from shields.io once the README is on GitHub.</p></header>
+    <div class="code logbox"><div class="bar-top"><span class="lang">markdown</span><button class="copy" type="button" data-copylog="1">Copy</button></div><pre><code id="logpre">${esc(buildLog())}</code></pre></div></section>
+  <section class="section"><header><h2>Start over</h2><p class="why">Clears topics, exercises, weeks, quiz results, badges and links from this browser.</p></header>
+    <div><button class="btn ghost" type="button" data-act="reset" id="resetbtn">Reset all progress</button></div></section>`;
+}
+
+/* ---------- routing ---------- */
+function route() {
+  const h = (location.hash || '').replace('#', '');
+  if (h === 'plan' || h === 'badges' || /^phase-[1-6]$/.test(h)) return h;
+  return 'overview';
+}
+function render() {
+  const r = route(), v = $('#view');
+  renderChrome(r);
+  if (r === 'overview') v.innerHTML = viewOverview();
+  else if (r === 'plan') v.innerHTML = viewPlan();
+  else if (r === 'badges') v.innerHTML = viewBadges();
+  else v.innerHTML = viewPhase(PHASES[+r.split('-')[1] - 1]);
+}
+function refreshLive() {
+  syncEarned(); save();
+  const r = route(); renderChrome(r);
+  const m = /^phase-(\d)$/.exec(r);
+  if (m) { const p = PHASES[+m[1] - 1]; $('#pprog').innerHTML = progressBlock(p); $('#pbadge').innerHTML = badgeBlock(p); }
+  const w = $('#wprog'); if (w) w.innerHTML = weekProgress();
+}
+
+/* ---------- events ---------- */
+async function copyText(text, btn, src) {
+  const old = btn.textContent;
+  try { await navigator.clipboard.writeText(text); btn.textContent = 'Copied'; }
+  catch (err) {
+    try { const rg = document.createRange(); rg.selectNodeContents(src); const s = getSelection(); s.removeAllRanges(); s.addRange(rg); btn.textContent = 'Press Ctrl+C'; }
+    catch (e2) { btn.textContent = 'Select and copy'; }
+  }
+  setTimeout(() => { btn.textContent = old; }, 1800);
+}
+document.addEventListener('change', e => {
+  const t = e.target;
+  if (t.matches('input[data-kind]')) {
+    const kind = t.dataset.kind;
+    if (kind === 'topic') setFlag(S.topics, key(t.dataset.p, t.dataset.i), t.checked);
+    else if (kind === 'ex') setFlag(S.ex, key(t.dataset.p, t.dataset.i), t.checked);
+    else if (kind === 'week') setFlag(S.weeks, t.dataset.i, t.checked);
+    const lab = t.closest('label'); if (lab) lab.classList.toggle('done', t.checked);
+    refreshLive();
+  } else if (t.matches('input[data-quiz]')) {
+    const pid = +t.dataset.quiz, p = PHASES[pid - 1];
+    const st = S.quiz[pid] || (S.quiz[pid] = {sel: [], done: false, score: 0});
+    if (st.done) return;
+    st.sel[+t.dataset.q] = +t.dataset.o;
+    save();
+    $('#qfoot').innerHTML = quizFoot(p);
+  }
+});
+document.addEventListener('input', e => {
+  const t = e.target;
+  if (t.matches('input[data-link]')) {
+    S.links[t.dataset.link] = t.value; save();
+    const lp = $('#logpre'); if (lp) lp.textContent = buildLog();
+  }
+});
+let resetArmed = false;
+document.addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  if (b.dataset.copy) { copyText(codeOf(b.dataset.copy), b, b.closest('.code').querySelector('code')); return; }
+  if (b.dataset.copylog) { copyText(buildLog(), b, $('#logpre')); return; }
+  const act = b.dataset.act; if (!act) return;
+  if (act === 'grade') {
+    const pid = +b.dataset.p, p = PHASES[pid - 1], st = S.quiz[pid];
+    if (!st) return;
+    st.score = p.quiz.filter((q, i) => st.sel[i] === q.a).length;
+    st.done = true;
+    $('#quiz').innerHTML = quizBlock(p);
+    refreshLive();
+  } else if (act === 'retake') {
+    const pid = +b.dataset.p, p = PHASES[pid - 1];
+    S.quiz[pid] = {sel: [], done: false, score: 0};
+    save();
+    $('#quiz').innerHTML = quizBlock(p);
+    refreshLive();
+  } else if (act === 'reset') {
+    if (!resetArmed) {
+      resetArmed = true; b.textContent = 'Click again to confirm';
+      setTimeout(() => { resetArmed = false; if (b.isConnected) b.textContent = 'Reset all progress'; }, 4000);
+    } else {
+      resetArmed = false;
+      S = {topics:{}, ex:{}, weeks:{}, quiz:{}, links:{}, earned:{}};
+      save(); render();
+    }
+  }
+});
+window.addEventListener('hashchange', () => { render(); window.scrollTo(0, 0); });
+
+syncEarned();
+render();
+</script>
+
+</body>
+</html>
